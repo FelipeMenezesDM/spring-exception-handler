@@ -118,8 +118,8 @@ public class ApiExceptionHandler {
         return buildResponseEntity(e, HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(MissingPathVariableException.class)
-    protected ResponseEntity<Object> handler(MissingPathVariableException e, WebRequest request) {
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    protected ResponseEntity<Object> handler(MissingServletRequestParameterException e, WebRequest request) {
         return buildResponseEntity(e, HttpStatus.BAD_REQUEST, request);
     }
 
