@@ -1,9 +1,10 @@
-# General Spring Library Template
-Modelo padrão para criação de bibliotecas para Spring Boot (Maven)
+# Spring Exception Handler
+Biblioteca para padronização de tratamento de exceções de APIs Rest construídas com Spring Boot
 
 ## Tópicos
 - [Instalação com Maven](#instalação-com-maven)
 - [Deploy manual](#deploy-manual)
+- [Configuração](#configuração)
 
 ## Instalação com Maven
 Crie o arquivo de configuração do maven ou inclua o repositório e o servidor no arquivo já existente:
@@ -26,7 +27,7 @@ Crie o arquivo de configuração do maven ou inclua o repositório e o servidor 
         </repository>
         <repository>
           <id>github</id>
-          <url>https://maven.pkg.github.com/felipemenezesdm/general-spring-library-template</url>
+          <url>https://maven.pkg.github.com/felipemenezesdm/spring-exception-handler</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>
@@ -41,7 +42,7 @@ Inclua a dependência no arquivo pom:
 ```xml
 <dependency>
   <groupId>br.com.felipemenezesdm</groupId>
-  <artifactId>general-spring-library-template</artifactId>
+  <artifactId>spring-exception-handler</artifactId>
   <version>1.0.0</version>
 </dependency>
 ```
@@ -68,3 +69,33 @@ O deploy da biblioteca é realizado automaticamente sempre que houver a criaçã
     ```
     mvn deploy -s settings.xml -Drepo.usrnm=USERNAME -Drepo.pswd=PASSWORD
     ```
+
+## Configuração
+Por padrão, o Spring Boot desabilita a opção de tratamento de exceções que não possuem um _handler_, como é o caso de exceções _**404 NOT FOUND**_. Para que todas as exceções sejam tratadas de forma padronizada pela biblioteca, é necessário adicionar a seguinte configuração para a aplicação:
+```yaml
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+```
+
+Além disso, é possível também customizar as mensagens de erro usando as seguintes propriedades:
+```yaml
+app:
+  exceptions:
+    400: Não foi possível validar a integridade dos dados da requisição
+    401: Não há permissões suficientes para validar validar esta requisição
+    403: Não há permissões suficientes para completar esta requisição
+    404: Não foi possível localizar o serviço solicitado
+    405: Não foi possível localizar o método solicitado
+    406: Não foi possível localizar um retorno válido para esta requisição
+    408: O tempo limite de processamento para a solicitação foi atingido
+    422: A entidade solicitada não pôde ser processada
+    500: Um erro interno no servidor não permitiu completar a solicitação
+    501: O servidor não suporta o método solicitado
+    502: Ocorreu um erro interno durante a conexão com o gateway
+    503: O servidor não está disponível para esta solicitação
+    504: O tempo limite de processamento foi atingido durante conexão com o gateway
+```
