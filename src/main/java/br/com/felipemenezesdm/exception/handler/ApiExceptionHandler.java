@@ -1,5 +1,7 @@
-package br.com.felipemenezesdm.exception;
+package br.com.felipemenezesdm.exception.handler;
 
+import br.com.felipemenezesdm.exception.*;
+import br.com.felipemenezesdm.exception.IllegalArgumentException;
 import br.com.felipemenezesdm.props.ApplicationProps;
 import br.com.felipemenezesdm.dto.ExceptionDetailFieldDTO;
 import br.com.felipemenezesdm.dto.ExceptionResponseDTO;
@@ -61,7 +63,7 @@ public class ApiExceptionHandler {
         return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(br.com.felipemenezesdm.exception.IllegalArgumentException.class)
     protected ResponseEntity<Object> handler(IllegalArgumentException e, WebRequest request) {
         return buildResponseEntity(e, e.getStatusCode(), request);
     }
