@@ -5,6 +5,7 @@ import br.com.felipemenezesdm.dto.ExceptionResponseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,7 +20,9 @@ import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import static java.time.Instant.now;
 import static java.time.ZoneId.systemDefault;
 import static java.time.format.DateTimeFormatter.ofPattern;
@@ -129,18 +132,15 @@ public class ApiExceptionHandler {
         StringBuilder endPoint = new StringBuilder();
 
         if(!Objects.isNull(request)) {
-            String queryString = request.getQueryString().isEmpty() ? "" : ("?").concat(request.getQueryString());
-
             endPoint.append(request.getRequestURI());
-            links.put("self", request.getRequestURL().toString().concat(queryString));
+            links.put("self", request.getRequestURL().toString().concat(request.getQueryString().isEmpty() ? "" : ("?").concat(request.getQueryString())));
 
             if(e instanceof ConstraintViolationException) {
                 ((ConstraintViolationException) e).getConstraintViolations().forEach((violation) -> {
                     ExceptionDetailFieldDTO field = new ExceptionDetailFieldDTO();
-                    field.setField(violation.getPropertyPath().toString());
-                    field.setValue(violation.getInvalidValue().toString());
+                    violation.getPropertyPath().iterator().forEachRemaining(name -> field.setField(name.toString()));
                     field.setMessage(violation.getMessage());
-
+                    setFieldValue(field, violation.getInvalidValue());
                     details.add(field);
                 });
             }
@@ -159,5 +159,19 @@ public class ApiExceptionHandler {
 
     private ResponseEntity<Object> buildResponseEntity(String payload, HttpStatus status) throws JsonProcessingException {
         return new ResponseEntity<>(objectMapper.readTree(payload), status);
+    }
+
+    private void setFieldValue(ExceptionDetailFieldDTO field, Object value) {
+        if(value instanceof HttpHeaders) {
+            Optional.ofNullable(((HttpHeaders) value).get(field.getField())).ifPresent(h -> field.setValue(h.get(0)));
+            return;
+        }
+
+        if(value instanceof Map) {
+            Optional.ofNullable(((Map<?, ?>) value).get(field.getField())).ifPresent(h -> field.setValue(h.toString()));
+            return;
+        }
+
+        field.setValue((String) value);
     }
 }
