@@ -4,3 +4,19 @@ spring:
   web:
     resources:
       add-mappings: false
+
+app:
+  exceptions:
+    400: Não foi possível validar a integridade dos dados da requisição
+    401: Não há permissões suficientes para validar validar esta requisição
+    403: Não há permissões suficientes para completar esta requisição
+    404: Não foi possível localizar o serviço solicitado
+    405: Não foi possível localizar o método solicitado
+    406: Não foi possível localizar um retorno válido para esta requisição
+    408: O tempo limite de processamento para a solicitação foi atingido
+    422: A entidade solicitada não pôde ser processada
+    500: Um erro interno no servidor não permitiu completar a solicitação
+    501: O servidor não suporta o método solicitado
+    502: Ocorreu um erro interno durante a conexão com o gateway
+    503: O servidor não está disponível para esta solicitação
+    504: O tempo limite de processamento foi atingido durante conexão com o gateway

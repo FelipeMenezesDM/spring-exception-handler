@@ -1,5 +1,6 @@
 package br.com.felipemenezesdm.exception;
 
+import br.com.felipemenezesdm.props.ApplicationProps;
 import br.com.felipemenezesdm.dto.ExceptionDetailFieldDTO;
 import br.com.felipemenezesdm.dto.ExceptionResponseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.core.annotation.Order;
@@ -35,6 +35,9 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 public class ApiExceptionHandler {
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    ApplicationProps applicationProps;
 
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
@@ -163,7 +166,7 @@ public class ApiExceptionHandler {
         dto.setLinks(links);
         dto.setStatus(httpStatus.value());
         dto.setError(httpStatus.name());
-        dto.setMessage(e.getMessage());
+        dto.setMessage(getDefaultMessage(String.valueOf(httpStatus.value())));
         dto.setTimestamp(ofPattern(DATE_TIME_FORMAT).withZone(systemDefault()).format(now()));
 
         return new ResponseEntity<>(dto, httpStatus);
@@ -189,5 +192,13 @@ public class ApiExceptionHandler {
 
     private HttpServletRequest castToRequest(WebRequest request) {
         return Objects.isNull(request) ? null : ((ServletWebRequest) request).getRequest();
+    }
+
+    private String getDefaultMessage(String httpStatusCode) {
+        if(!Objects.isNull(applicationProps.getExceptions()) && applicationProps.getExceptions().containsKey(httpStatusCode)) {
+            return applicationProps.getExceptions().get(httpStatusCode);
+        }
+
+        return null;
     }
 }
