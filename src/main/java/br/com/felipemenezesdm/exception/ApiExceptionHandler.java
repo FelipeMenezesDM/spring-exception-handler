@@ -8,13 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -37,68 +39,68 @@ public class ApiExceptionHandler {
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
     @ExceptionHandler(BadGatewayException.class)
-    protected ResponseEntity<Object> handler(BadGatewayException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(BadGatewayException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    protected ResponseEntity<Object> handler(BadRequestException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(BadRequestException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(ForbiddenException.class)
-    protected ResponseEntity<Object> handler(ForbiddenException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(ForbiddenException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(GatewayTimeoutException.class)
-    protected ResponseEntity<Object> handler(GatewayTimeoutException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(GatewayTimeoutException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    protected ResponseEntity<Object> handler(IllegalArgumentException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(IllegalArgumentException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(MethodNotAllowedException.class)
-    protected ResponseEntity<Object> handler(MethodNotAllowedException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(MethodNotAllowedException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(NotAcceptableException.class)
-    protected ResponseEntity<Object> handler(NotAcceptableException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(NotAcceptableException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(NotFoundException.class)
-    protected ResponseEntity<Object> handler(NotFoundException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(NotFoundException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(NotImplementedException.class)
-    protected ResponseEntity<Object> handler(NotImplementedException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(NotImplementedException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(RequestTimeoutException.class)
-    protected ResponseEntity<Object> handler(RequestTimeoutException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(RequestTimeoutException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(ServiceUnavailableException.class)
-    protected ResponseEntity<Object> handler(ServiceUnavailableException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(ServiceUnavailableException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    protected ResponseEntity<Object> handler(UnauthorizedException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(UnauthorizedException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(UnprocessableEntityException.class)
-    protected ResponseEntity<Object> handler(UnprocessableEntityException e) {
-        return buildResponseEntity(e, e.getStatusCode());
+    protected ResponseEntity<Object> handler(UnprocessableEntityException e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(HttpClientErrorException.Forbidden.class)
@@ -111,21 +113,23 @@ public class ApiExceptionHandler {
         return buildResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<Object> handler(MethodArgumentNotValidException e) {
-        return buildResponseEntity(e, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(ConstraintViolationException.class)
     protected ResponseEntity<Object> handler(ConstraintViolationException e, WebRequest request) {
-        return buildResponseEntity(e, HttpStatus.BAD_REQUEST, ((ServletWebRequest) request).getRequest());
+        return buildResponseEntity(e, HttpStatus.BAD_REQUEST, request);
     }
 
-    private ResponseEntity<Object> buildResponseEntity(Throwable e, HttpStatus httpStatus) {
-        return buildResponseEntity(e, httpStatus, null);
+    @ExceptionHandler(MissingPathVariableException.class)
+    protected ResponseEntity<Object> handler(MissingPathVariableException e, WebRequest request) {
+        return buildResponseEntity(e, HttpStatus.BAD_REQUEST, request);
     }
 
-    private ResponseEntity<Object> buildResponseEntity(Throwable e, HttpStatus httpStatus, HttpServletRequest request) {
+    @ExceptionHandler(NoHandlerFoundException.class)
+    protected ResponseEntity<Object> handler(NoHandlerFoundException e, WebRequest request) {
+        return buildResponseEntity(e, HttpStatus.NOT_FOUND, request);
+    }
+
+    private ResponseEntity<Object> buildResponseEntity(Throwable e, HttpStatus httpStatus, WebRequest webRequest) {
+        HttpServletRequest request = castToRequest(webRequest);
         ExceptionResponseDTO dto = new ExceptionResponseDTO();
         List<ExceptionDetailFieldDTO> details = new ArrayList<>();
         HashMap<String, String> links = new HashMap<>();
@@ -133,7 +137,7 @@ public class ApiExceptionHandler {
 
         if(!Objects.isNull(request)) {
             endPoint.append(request.getRequestURI());
-            links.put("self", request.getRequestURL().toString().concat(request.getQueryString().isEmpty() ? "" : ("?").concat(request.getQueryString())));
+            links.put("self", request.getRequestURL().toString().concat(Objects.isNull(request.getQueryString()) ? "" : ("?").concat(request.getQueryString())));
 
             if(e instanceof ConstraintViolationException) {
                 ((ConstraintViolationException) e).getConstraintViolations().forEach((violation) -> {
@@ -143,6 +147,14 @@ public class ApiExceptionHandler {
                     setFieldValue(field, violation.getInvalidValue());
                     details.add(field);
                 });
+            }
+
+            if(e instanceof MissingServletRequestParameterException) {
+                MissingServletRequestParameterException error = (MissingServletRequestParameterException) e;
+                ExceptionDetailFieldDTO field = new ExceptionDetailFieldDTO();
+                field.setField(error.getParameterName());
+                field.setMessage(error.getMessage());
+                details.add(field);
             }
         }
 
@@ -173,5 +185,9 @@ public class ApiExceptionHandler {
         }
 
         field.setValue((String) value);
+    }
+
+    private HttpServletRequest castToRequest(WebRequest request) {
+        return Objects.isNull(request) ? null : ((ServletWebRequest) request).getRequest();
     }
 }
