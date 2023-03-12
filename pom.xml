@@ -7,6 +7,8 @@
     <groupId>br.com.felipemenezesdm</groupId>
     <artifactId>spring-exception-handler</artifactId>
     <version>1.0.0</version>
+    <url>https://github.com/felipemenezesdm/${project.artifactId}</url>
+    <description>Manipulador de exceções para aplicações desenvolvidas com Spring Boot</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
