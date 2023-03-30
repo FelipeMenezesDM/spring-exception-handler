@@ -8,7 +8,7 @@ spring:
 app:
   exceptions:
     400: Não foi possível validar a integridade dos dados da requisição
-    401: Não há permissões suficientes para validar validar esta requisição
+    401: Não há permissões suficientes para validar esta requisição
     403: Não há permissões suficientes para completar esta requisição
     404: Não foi possível localizar o serviço solicitado
     405: Não foi possível localizar o método solicitado

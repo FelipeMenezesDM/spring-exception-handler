@@ -5,7 +5,6 @@ import br.com.felipemenezesdm.exception.IllegalArgumentException;
 import br.com.felipemenezesdm.props.ApplicationProps;
 import br.com.felipemenezesdm.dto.ExceptionDetailFieldDTO;
 import br.com.felipemenezesdm.dto.ExceptionResponseDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +20,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,13 +110,23 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(HttpClientErrorException.Forbidden.class)
-    protected ResponseEntity<Object> handler(HttpClientErrorException.Forbidden e) throws JsonProcessingException {
-        return buildResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
+    protected ResponseEntity<Object> handler(HttpClientErrorException.Forbidden e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
     }
 
     @ExceptionHandler(HttpClientErrorException.Unauthorized.class)
-    protected ResponseEntity<Object> handler(HttpClientErrorException.Unauthorized e) throws JsonProcessingException {
-        return buildResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
+    protected ResponseEntity<Object> handler(HttpClientErrorException.Unauthorized e, WebRequest request) {
+        return buildResponseEntity(e, e.getStatusCode(), request);
+    }
+
+    @ExceptionHandler(SocketTimeoutException.class)
+    protected ResponseEntity<Object> handler(SocketTimeoutException e, WebRequest request) {
+        return buildResponseEntity(e, HttpStatus.GATEWAY_TIMEOUT, request);
+    }
+
+    @ExceptionHandler(ConnectException.class)
+    protected ResponseEntity<Object> handler(ConnectException e, WebRequest request) {
+        return buildResponseEntity(e, HttpStatus.SERVICE_UNAVAILABLE, request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -172,10 +183,6 @@ public class ApiExceptionHandler {
         dto.setTimestamp(ofPattern(DATE_TIME_FORMAT).withZone(systemDefault()).format(now()));
 
         return new ResponseEntity<>(dto, httpStatus);
-    }
-
-    private ResponseEntity<Object> buildResponseEntity(String payload, HttpStatus status) throws JsonProcessingException {
-        return new ResponseEntity<>(objectMapper.readTree(payload), status);
     }
 
     private void setFieldValue(ExceptionDetailFieldDTO field, Object value) {
